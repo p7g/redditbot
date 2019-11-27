@@ -16,7 +16,7 @@ def init(context: Context):
     reddit_client = context.reddit_client
     subscription_changes = context.subscription_changes
 
-    bot = commands.Bot(command_prefix='!?')
+    bot = commands.Bot(command_prefix='>')
 
     @bot.group(name='subscription', invoke_without_command=True)
     async def subscription(ctx, name='<empty>', *args):
