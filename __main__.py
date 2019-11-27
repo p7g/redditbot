@@ -14,13 +14,6 @@ load_dotenv()
 logger = get_logger(__name__)
 
 
-async def read_queue(ctx: util.Context):
-    logger.info('Reading queue')
-    while True:
-        val = await ctx.new_submissions.coro_get()
-        logger.info('Got a new subscription', data=val)
-
-
 async def start():
     discord_logger = logging.getLogger('discord')
     discord_logger.setLevel(logging.DEBUG)
@@ -49,14 +42,11 @@ async def start():
         await models.init(os.getenv('DB_URL'))
         logger.info('Initialized database')
 
-        reddit_process = reddit.SubredditWatcher.create(context)
-        reddit_process.start()
-
         logger.info('Starting application')
         await asyncio.gather(
-            read_queue(context),
             bot.forward_messages(context),
             discord_client.start(os.getenv('DISCORD_TOKEN')),
+            reddit.watch_subscriptions(context),
         )
     finally:
         logger.info('Logging out discord client')

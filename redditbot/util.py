@@ -8,7 +8,7 @@ from multiprocessing.context import BaseContext
 from typing import Callable, Iterable, Generator, TYPE_CHECKING
 
 import discord.ext.commands
-from aioprocessing import AioQueue
+from aioprocessing.queues import AioQueue
 
 if TYPE_CHECKING:
     import redditbot.reddit
