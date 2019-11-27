@@ -1,0 +1,8 @@
+discord.py
+praw
+tortoise-orm
+aiosqlite
+python-dotenv
+aiostream
+aioprocessing
+structlog
