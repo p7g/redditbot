@@ -1,7 +1,7 @@
 import discord
 import praw.models
 from discord.ext import commands
-from tortoise.exceptions import DoesNotExist
+from tortoise.exceptions import DoesNotExist, IntegrityError
 from structlog import get_logger
 
 from redditbot.models import Subscription
@@ -63,12 +63,15 @@ def init(context: Context):
 
         async with ctx.typing():
             if await reddit_client.is_valid_subreddit(subreddit):
-                await Subscription.create(channel_id=ctx.channel.id,
-                                          subreddit=subreddit)
-                await subscription_changes.put(
-                    ('added', (ctx.channel.id, subreddit)))
+                try:
+                    sub = await Subscription.create(channel_id=ctx.channel.id,
+                                                    subreddit=subreddit)
+                    await subscription_changes.put(
+                        ('added', (ctx.channel.id, sub.normalized_subreddit)))
 
-                msg = f'**Successfully subscribed to** {subreddit}**!**'
+                    msg = f'**Successfully subscribed to** {subreddit}**!**'
+                except IntegrityError:
+                    msg = f'**Already subscribed to** {subreddit}**!**'
             else:
                 msg = f'**Invalid subreddit:** {subreddit}'
 
@@ -87,7 +90,8 @@ def init(context: Context):
                     channel_id=ctx.channel.id, subreddit=subreddit)
                 await subscription.delete()
                 await subscription_changes.put(
-                    ('removed', (ctx.channel.id, subreddit)))
+                    ('removed', (ctx.channel.id,
+                                 subscription.normalized_subreddit)))
 
                 msg = ('**Successfully removed subscription'
                        f' to** {subreddit}**!**')

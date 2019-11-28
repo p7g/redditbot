@@ -21,6 +21,9 @@ class CICharField(fields.CharField):
 
 
 class Subscription(Model):
+    class Meta:
+        unique_together = ('channel_id', 'normalized_subreddit')
+
     id = fields.IntField(pk=True)
     channel_id = fields.CharField(max_length=20)
     subreddit = fields.CharField(max_length=21)  # r/21charactersandnomore
@@ -31,6 +34,11 @@ class Subscription(Model):
         return await super().create(channel_id=channel_id,
                                     subreddit=subreddit,
                                     normalized_subreddit=subreddit)
+
+    @classmethod
+    async def get(cls, channel_id, subreddit):
+        return await super().get(channel_id=channel_id,
+                                 normalized_subreddit=subreddit)
 
     @classmethod
     def for_channel(cls, channel_id: int):
@@ -46,8 +54,8 @@ class Subscription(Model):
     async def subreddit_subscribers(cls, subreddit: str) -> Iterable[int]:
         subscriptions = await cls.for_subreddit(subreddit) \
             .values_list('channel_id', flat=True)
-        return map(int, subscriptions)
+        return map(int, set(subscriptions))
 
     @classmethod
     async def all_subreddits(cls) -> Iterable[str]:
-        return await cls.all().values_list('subreddit', flat=True)
+        return await cls.all().values_list('normalized_subreddit', flat=True)
