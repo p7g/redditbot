@@ -2,7 +2,6 @@ import asyncio
 import multiprocessing as mp
 import os
 
-from aioprocessing import AioQueue
 from dotenv import load_dotenv
 from structlog import get_logger
 
@@ -26,8 +25,8 @@ async def start():
         discord_client=None,  # discord_client depends on context
         reddit_client=reddit_client,
         reddit_credentials=reddit_credentials,
-        subscription_changes=AioQueue(),
-        new_submissions=AioQueue(),
+        subscription_changes=asyncio.Queue(),
+        new_submissions=asyncio.Queue(),
         mp_context=mp.get_context('spawn'),
     )
 

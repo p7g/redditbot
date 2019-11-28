@@ -30,5 +30,5 @@ class Subscription(Model):
         return map(int, subscriptions)
 
     @classmethod
-    def all_subreddits(cls) -> Iterable[str]:
-        return cls.all().values_list('subreddit', flat=True)
+    async def all_subreddits(cls) -> Iterable[str]:
+        return await cls.all().values_list('subreddit', flat=True)

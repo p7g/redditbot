@@ -58,7 +58,7 @@ def _subreddit_watcher(credentials: Credentials, subreddits: List[str],
 async def _pipe_to_queue(ctx: Context, recv: AioConnection):
     while True:
         val = await recv.coro_recv()
-        await ctx.new_submissions.coro_put(val)
+        await ctx.new_submissions.put(val)
 
 
 def _start_watching(ctx: Context, subreddits: Iterable[str],

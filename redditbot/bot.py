@@ -54,7 +54,7 @@ def init(context: Context):
             if await reddit_client.is_valid_subreddit(subreddit):
                 await Subscription.create(channel_id=ctx.channel.id,
                                           subreddit=subreddit)
-                await subscription_changes.coro_put(
+                await subscription_changes.put(
                     ('added', (ctx.channel.id, subreddit)))
 
                 msg = f'**Successfully subscribed to** {subreddit}**!**'
@@ -75,7 +75,7 @@ def init(context: Context):
                 subscription = await Subscription.get(
                     channel_id=ctx.channel.id, subreddit=subreddit)
                 await subscription.delete()
-                await subscription_changes.coro_put(
+                await subscription_changes.put(
                     ('removed', (ctx.channel.id, subreddit)))
 
                 msg = ('**Successfully removed subscription'
