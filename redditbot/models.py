@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from tortoise import Tortoise, fields
 from tortoise.models import Model
 
@@ -12,3 +14,21 @@ class Subscription(Model):
     id = fields.IntField(pk=True)
     channel_id = fields.TextField()
     subreddit = fields.TextField()
+
+    @classmethod
+    def for_channel(cls, channel_id: int):
+        return cls.filter(channel_id=str(channel_id))
+
+    @classmethod
+    def for_subreddit(cls, subreddit: str):
+        return cls.filter(subreddit__in=(subreddit, 'all'))
+
+    @classmethod
+    async def subreddit_subscribers(cls, subreddit: str) -> Iterable[int]:
+        subscriptions = await cls.for_subreddit(subreddit) \
+            .values_list('channel_id', flat=True)
+        return map(int, subscriptions)
+
+    @classmethod
+    def all_subreddits(cls) -> Iterable[str]:
+        return cls.all().values_list('subreddit', flat=True)

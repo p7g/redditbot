@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import multiprocessing as mp
 import os
 
@@ -15,9 +14,6 @@ logger = get_logger(__name__)
 
 
 async def start():
-    discord_logger = logging.getLogger('discord')
-    discord_logger.setLevel(logging.DEBUG)
-
     reddit_credentials = reddit.Credentials(
         client_id=os.getenv('REDDIT_CLIENT_ID'),
         client_secret=os.getenv('REDDIT_CLIENT_SECRET'),
@@ -27,7 +23,7 @@ async def start():
     logger.info('Initialized reddit client')
 
     context = util.Context(
-        discord_client=None,
+        discord_client=None,  # discord_client depends on context
         reddit_client=reddit_client,
         reddit_credentials=reddit_credentials,
         subscription_changes=AioQueue(),
@@ -35,7 +31,7 @@ async def start():
         mp_context=mp.get_context('spawn'),
     )
 
-    context.discord_client = discord_client = bot.init(context)
+    context.discord_client = bot.init(context)
     logger.info('Initialized dicord client')
 
     try:
@@ -45,12 +41,12 @@ async def start():
         logger.info('Starting application')
         await asyncio.gather(
             bot.forward_messages(context),
-            discord_client.start(os.getenv('DISCORD_TOKEN')),
+            context.discord_client.start(os.getenv('DISCORD_TOKEN')),
             reddit.watch_subscriptions(context),
         )
     finally:
         logger.info('Logging out discord client')
-        await discord_client.logout()
+        await context.discord_client.logout()
 
 
 if __name__ == '__main__':

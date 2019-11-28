@@ -28,7 +28,8 @@ class Client:
         self._reddit = praw.Reddit(
             client_id=credentials.client_id,
             client_secret=credentials.client_secret,
-            user_agent=f'{platform.system()}:redditbot-dev:v0.0.1 (by /u/p-7g)',
+            user_agent=(f'{platform.system()}'
+                        ':redditbot-dev:v0.0.1 (by /u/p-7g)'),
         )
 
     def subreddit_stream(self, name: str, **kwargs):
@@ -75,8 +76,7 @@ def _start_watching(ctx: Context, subreddits: Iterable[str],
 async def watch_subscriptions(ctx: Context):
     logger.info('Watching for reddit submissions')
 
-    qs = Subscription.all().values_list('subreddit', flat=True)
-    known_subreddits = set(await qs)
+    known_subreddits = set(await Subscription.all_subreddits())
 
     recv, send = AioPipe(duplex=False)
     if known_subreddits:
@@ -94,9 +94,8 @@ async def watch_subscriptions(ctx: Context):
                     subreddit=subreddit)
         # if we're already watching or there are more channels watching the
         # subreddit, don't do anything
-        if (op == 'added' and subreddit in known_subreddits
-                or op == 'removed' and
-                1 < await Subscription.filter(subreddit=subreddit).count()):
+        if (op == 'added' and subreddit in known_subreddits or op == 'removed'
+                and 1 < await Subscription.for_subreddit(subreddit).count()):
             continue
 
         if op == 'removed':

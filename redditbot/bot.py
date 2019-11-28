@@ -1,5 +1,3 @@
-import json
-
 import discord
 import praw.models
 from discord.ext import commands
@@ -32,19 +30,18 @@ def init(context: Context):
                     user_id=ctx.message.author.id,
                     channel_id=ctx.channel.id)
 
-        qs = Subscription.filter(channel_id=ctx.channel.id)
+        subscriptions = await Subscription.for_channel(ctx.channel.id)
 
         async with ctx.typing():
-            if not await qs:
-                buf = '**This channel has no subscriptions**'
-            else:
+            if subscriptions:
                 buf = '**This channel is subscribed to:**\n'
 
-                async for subscription in Subscription.filter(
-                        channel_id=ctx.channel.id):
+                async for subscription in subscriptions:
                     buf += f'\t- /r/{subscription.subreddit}\n'
+            else:
+                buf = '**This channel has no subscriptions**'
 
-        await ctx.send(buf)
+            await ctx.send(buf)
 
     @subscription.command(name='new')
     async def subscriptions_new(ctx, subreddit):
@@ -53,21 +50,18 @@ def init(context: Context):
                     channel_id=ctx.channel.id,
                     subreddit=subreddit)
 
-        success = False
         async with ctx.typing():
             if await reddit_client.is_valid_subreddit(subreddit):
                 await Subscription.create(channel_id=ctx.channel.id,
                                           subreddit=subreddit)
-                success = True
+                await subscription_changes.coro_put(
+                    ('added', (ctx.channel.id, subreddit)))
 
-        if success:
-            msg = f'**Successfully subscribed to** {subreddit}**!**'
-            await subscription_changes.coro_put(
-                ('added', (ctx.channel.id, subreddit)))
-        else:
-            msg = f'**Invalid subreddit:** {subreddit}'
+                msg = f'**Successfully subscribed to** {subreddit}**!**'
+            else:
+                msg = f'**Invalid subreddit:** {subreddit}'
 
-        await ctx.send(msg)
+            await ctx.send(msg)
 
     @subscription.command(name='delete')
     async def subscriptions_delete(ctx, subreddit):
@@ -76,24 +70,20 @@ def init(context: Context):
                     channel_id=ctx.channel.id,
                     subreddit=subreddit)
 
-        found = False
         async with ctx.typing():
             try:
                 subscription = await Subscription.get(
                     channel_id=ctx.channel.id, subreddit=subreddit)
-                found = True
                 await subscription.delete()
+                await subscription_changes.coro_put(
+                    ('removed', (ctx.channel.id, subreddit)))
+
+                msg = ('**Successfully removed subscription'
+                       f' to** {subreddit}**!**')
             except DoesNotExist:
-                pass
+                msg = f'**This channel is not subscribed to** {subreddit}'
 
-        if found:
-            msg = f'**Successfully removed subscription to** {subreddit}**!**'
-            await subscription_changes.coro_put(
-                ('removed', (ctx.channel.id, subreddit)))
-        else:
-            msg = f'**This channel is not subscribed to** {subreddit}'
-
-        await ctx.send(msg)
+            await ctx.send(msg)
 
     return bot
 
@@ -111,8 +101,8 @@ async def forward_messages(ctx: Context):
                     id=reddit_update.id,
                     subreddit=display_name)
 
-        subscriptions = await Subscription.filter(
-            subreddit__in=(reddit_update.subreddit.display_name, 'all'))
+        subscriptions = await Subscription \
+            .for_subreddit(reddit_update.subreddit.display_name)
 
         for sub in subscriptions:
             channel: discord.TextChannel = ctx.discord_client \
