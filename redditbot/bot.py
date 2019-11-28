@@ -101,12 +101,12 @@ async def forward_messages(ctx: Context):
                     id=reddit_update.id,
                     subreddit=display_name)
 
-        subscriptions = await Subscription \
-            .for_subreddit(reddit_update.subreddit.display_name)
+        channel_ids = await Subscription \
+            .subreddit_subscribers(reddit_update.subreddit.display_name)
 
-        for sub in subscriptions:
+        for channel_id in channel_ids:
             channel: discord.TextChannel = ctx.discord_client \
-                .get_channel(int(sub.channel_id))
+                .get_channel(channel_id)
             if channel:
                 await channel.send(f'New post on /r/{display_name}',
                                    embed=generate_embed(reddit_update))
