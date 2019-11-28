@@ -36,7 +36,7 @@ def init(context: Context):
             if subscriptions:
                 buf = '**This channel is subscribed to:**\n'
 
-                async for subscription in subscriptions:
+                for subscription in subscriptions:
                     buf += f'\t- /r/{subscription.subreddit}\n'
             else:
                 buf = '**This channel has no subscriptions**'
