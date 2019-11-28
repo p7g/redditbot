@@ -41,7 +41,7 @@ def init(context: Context):
             else:
                 buf = '**This channel has no subscriptions**'
 
-            await ctx.send(buf)
+        await ctx.send(buf)
 
     @subscription.command(name='new')
     async def subscriptions_new(ctx, subreddit):
@@ -61,7 +61,7 @@ def init(context: Context):
             else:
                 msg = f'**Invalid subreddit:** {subreddit}'
 
-            await ctx.send(msg)
+        await ctx.send(msg)
 
     @subscription.command(name='delete')
     async def subscriptions_delete(ctx, subreddit):
@@ -83,7 +83,7 @@ def init(context: Context):
             except DoesNotExist:
                 msg = f'**This channel is not subscribed to** {subreddit}'
 
-            await ctx.send(msg)
+        await ctx.send(msg)
 
     return bot
 
