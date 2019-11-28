@@ -14,18 +14,25 @@ def init(context: Context):
     reddit_client = context.reddit_client
     subscription_changes = context.subscription_changes
 
-    bot = commands.Bot(command_prefix='>')
+    bot = commands.Bot(command_prefix='>',
+                       description='Subscribe to subreddit submissions',
+                       case_insensitive=True)
 
-    @bot.group(name='subscription', invoke_without_command=True)
-    async def subscription(ctx, name='<empty>', *args):
+    @bot.group(name='subs',
+               invoke_without_command=True,
+               case_insensitive=True,
+               aliases=('sub', ))
+    async def subs(ctx, *args):
         logger.info('Received invalid command',
                     user_id=ctx.message.author.id,
                     channel_id=ctx.channel.id,
                     args=args)
-        await ctx.send(f'Invalid subcommand {name}')
+        if args:
+            await ctx.send('Invalid subcommand %s' % ' '.join(args))
+        else:
+            await subs_list(ctx)
 
-    @subscription.command(name='list')
-    async def subscriptions_list(ctx, *args):
+    async def subs_list(ctx, *args):
         logger.info('Received subscription list command',
                     user_id=ctx.message.author.id,
                     channel_id=ctx.channel.id)
@@ -43,8 +50,12 @@ def init(context: Context):
 
         await ctx.send(buf)
 
-    @subscription.command(name='new')
-    async def subscriptions_new(ctx, subreddit):
+    subs.command(name='list',
+                 callback=subs_list,
+                 brief='See all subscriptions for this channel')
+
+    @subs.command(name='new', aliases=('add', ))
+    async def subs_new(ctx, subreddit):
         logger.info('Received subscription new command',
                     user_id=ctx.message.author.id,
                     channel_id=ctx.channel.id,
@@ -63,8 +74,8 @@ def init(context: Context):
 
         await ctx.send(msg)
 
-    @subscription.command(name='delete')
-    async def subscriptions_delete(ctx, subreddit):
+    @subs.command(name='delete', aliases=('remove', ))
+    async def subs_delete(ctx, subreddit):
         logger.info('Received subscription delete command',
                     user_id=ctx.message.author.id,
                     channel_id=ctx.channel.id,
