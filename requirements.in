@@ -5,3 +5,4 @@ aiosqlite
 python-dotenv
 aioprocessing
 structlog
+yarl

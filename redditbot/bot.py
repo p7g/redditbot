@@ -1,5 +1,8 @@
+from datetime import datetime
+
 import discord
 import praw.models
+import yarl
 from discord.ext import commands
 from tortoise.exceptions import DoesNotExist, IntegrityError
 from structlog import get_logger
@@ -8,6 +11,8 @@ from redditbot.models import Subscription
 from redditbot.util import Context, queue_to_async_gen
 
 logger = get_logger(__name__)
+
+REDDIT_URL = yarl.URL('https://reddit.com')
 
 
 def init(context: Context):
@@ -103,8 +108,25 @@ def init(context: Context):
     return bot
 
 
+def _link(path: str):
+    return str(REDDIT_URL.with_path(path))
+
+
 def generate_embed(post: praw.models.Submission) -> discord.Embed:
-    return None
+    embed = discord.Embed(title=post.title,
+                          description=post.selftext,
+                          timestamp=datetime.utcfromtimestamp(
+                              post.created_utc),
+                          url=_link(post.url)) \
+        .set_footer(text=post.subreddit_name_prefixed,
+                    icon_url=post.subreddit.icon_img) \
+        .set_author(name=post.author.subreddit['display_name_prefixed'],
+                    icon_url=post.author.icon_img,
+                    url=_link(post.author.subreddit['url']))
+
+    if getattr(post, 'post_hint', None) == 'image':
+        embed = embed.set_image(url=post.url)
+    return embed
 
 
 async def forward_messages(ctx: Context):
