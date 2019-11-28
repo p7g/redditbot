@@ -46,9 +46,8 @@ class Subscription(Model):
 
     @classmethod
     def for_subreddit(cls, subreddit: str):
-        normalized = subreddit  # _normalize_string(subreddit)
         return cls.filter(
-            Q(normalized_subreddit=normalized) | Q(normalized_subreddit='all'))
+            Q(normalized_subreddit=subreddit) | Q(normalized_subreddit='all'))
 
     @classmethod
     async def subreddit_subscribers(cls, subreddit: str) -> Iterable[int]:
