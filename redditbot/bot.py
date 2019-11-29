@@ -147,5 +147,5 @@ async def forward_messages(ctx: Context):
             channel: discord.TextChannel = ctx.discord_client \
                 .get_channel(channel_id)
             if channel:
-                await channel.send('**New post on** {display_name_prefixed}',
+                await channel.send(f'**New post on** {display_name_prefixed}',
                                    embed=generate_embed(reddit_update))
