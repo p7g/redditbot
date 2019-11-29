@@ -132,18 +132,20 @@ def generate_embed(post: praw.models.Submission) -> discord.Embed:
 async def forward_messages(ctx: Context):
     logger.info('Forwarding reddit submissions to discord')
     async for reddit_update in queue_to_async_gen(ctx.new_submissions):
-        display_name = reddit_update.subreddit.display_name
+        subreddit = reddit_update.subreddit
+        display_name = subreddit.display_name
+        display_name_prefixed = subreddit.display_name_prefixed
 
         logger.info('Got reddit update',
                     id=reddit_update.id,
                     subreddit=display_name)
 
         channel_ids = await Subscription \
-            .subreddit_subscribers(reddit_update.subreddit.display_name)
+            .subreddit_subscribers(display_name)
 
         for channel_id in channel_ids:
             channel: discord.TextChannel = ctx.discord_client \
                 .get_channel(channel_id)
             if channel:
-                await channel.send(f'New post on /r/{display_name}',
+                await channel.send('**New post on** {display_name_prefixed}',
                                    embed=generate_embed(reddit_update))
