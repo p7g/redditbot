@@ -49,7 +49,7 @@ def init(context: Context):
                 buf = '**This channel is subscribed to:**\n'
 
                 for subscription in subscriptions:
-                    buf += f'\t- /r/{subscription.subreddit}\n'
+                    buf += f'\t- r/{subscription.subreddit}\n'
             else:
                 buf = '**This channel has no subscriptions**'
 
