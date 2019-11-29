@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+if ! [ -x "$(command -v pylama)" ]; then
+    >&2 echo "Pylama is not executable"
+    exit 1
+fi
+
+if [ '' != "$AUTOHOOK_STAGED_FILES" ]; then
+    echo "$AUTOHOOK_STAGED_FILES" | xargs pylama
+else
+    pylama "$AUTOHOOK_REPO_ROOT"
+fi

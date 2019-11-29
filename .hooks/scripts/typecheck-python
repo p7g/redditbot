@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+if ! [ -x "$(command -v pytype)" ]; then
+    >&2 echo "pytype is not executable"
+    exit 1
+fi
+
+if [ '' != "$AUTOHOOK_STAGED_FILES" ]; then
+    echo "$AUTOHOOK_STAGED_FILES" | xargs pytype
+else
+    pytype "$AUTOHOOK_REPO_ROOT"
+fi
