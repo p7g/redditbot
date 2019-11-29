@@ -117,7 +117,7 @@ def generate_embed(post: praw.models.Submission) -> discord.Embed:
                           description=post.selftext,
                           timestamp=datetime.utcfromtimestamp(
                               post.created_utc),
-                          url=_link(post.url)) \
+                          url=post.url) \
         .set_footer(text=post.subreddit_name_prefixed,
                     icon_url=post.subreddit.icon_img) \
         .set_author(name=post.author.subreddit['display_name_prefixed'],
