@@ -114,6 +114,7 @@ def _link(path: str):
 
 def generate_embed(post: praw.models.Submission) -> discord.Embed:
     embed = discord.Embed(title=post.title,
+                          color=0xff5700,
                           description=post.selftext,
                           timestamp=datetime.utcfromtimestamp(
                               post.created_utc),
