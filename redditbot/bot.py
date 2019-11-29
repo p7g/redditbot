@@ -82,7 +82,7 @@ def init(context: Context):
 
         await ctx.send(msg)
 
-    @subs.command(name='delete', aliases=('remove', ))
+    @subs.command(name='delete', aliases=('remove', 'del'))
     async def subs_delete(ctx, subreddit):
         logger.info('Received subscription delete command',
                     user_id=ctx.message.author.id,
