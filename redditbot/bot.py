@@ -15,7 +15,7 @@ logger = get_logger(__name__)
 REDDIT_URL = yarl.URL('https://reddit.com')
 
 
-def init(context: Context):
+def init(context: Context):  # noqa: C901
     reddit_client = context.reddit_client
     subscription_changes = context.subscription_changes
 
